@@ -2,13 +2,6 @@
 mysqlConfig:
   uri: mysql://root:password@localhost:3306/cdpforge
 
-esConfig:
-  url: "https://localhost:9200"
-  username: "elastic"
-  password: "9b7agGX-+RLZ=bgp+lBx"
-  ssl:
-    rejectUnauthorized: false
-
 plugin:
   plugin_name: 'core_pipeline_stage'
   callback_url: "http://localhost:3333"
