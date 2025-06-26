@@ -13,7 +13,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
   }
 
   let existingPlugin = await Plugin.findOne({
-    where: { name: plugin.plugin_name }
+    where: { name: plugin.name }
   })
   if (existingPlugin) {
     await existingPlugin.update({
@@ -35,7 +35,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
   try {
     if (plugin.type == 'parallel') {
       newPlugin = await Plugin.create({
-        name: plugin.plugin_name,
+        name: plugin.name,
         type: plugin.type,
         priority: plugin.priority,
         callback_url: plugin.callback_url,
@@ -50,7 +50,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
     } 
     if (plugins.parallels.length) {
       newPlugin = await Plugin.create({
-        name: plugin.plugin_name,
+        name: plugin.name,
         type: plugin.type,
         priority: plugin.priority,
         callback_url: plugin.callback_url,
@@ -67,7 +67,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
 
     let promises: any[] = [];
     newPlugin = await Plugin.create({
-      name: plugin.plugin_name,
+      name: plugin.name,
       type: plugin.type,
       priority: plugin.priority,
       callback_url: plugin.callback_url,
@@ -124,15 +124,15 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
 };
 
 export const unregister: RequestHandler = async (req: Request, res: Response) => {
-  const plugin : { plugin_name: string } = req.body;
+  const plugin : { name: string } = req.body;
 
-  if (!plugin || !plugin.plugin_name) {
+  if (!plugin || !plugin.name) {
     res.status(400).end("Invalid plugin");
     return;
   }
 
   let existingPlugin = await Plugin.findOne({
-    where: { name: plugin.plugin_name }
+    where: { name: plugin.name }
   })
   if (!existingPlugin) {
     res.status(404).end("Plugin not found");
@@ -192,8 +192,8 @@ export const unregister: RequestHandler = async (req: Request, res: Response) =>
 
 const isValidPlugin = (plugin: PluginReq): boolean => {
   return (
-    typeof plugin.plugin_name === 'string' &&
-    typeof plugin.priority === 'number' && (plugin.priority > 0 || plugin.plugin_name == Config.getInstance().config.plugin.plugin_name) && plugin.priority <= 100 &&
+    typeof plugin.name === 'string' &&
+    typeof plugin.priority === 'number' && (plugin.priority > 0 || plugin.name == Config.getInstance().config.plugin.name) && plugin.priority <= 100 &&
     typeof plugin.type === 'string' && ['parallel', 'blocking'].includes(plugin.type) &&
     typeof plugin.callback_url === 'string'
   );

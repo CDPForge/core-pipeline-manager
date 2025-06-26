@@ -2,6 +2,7 @@
 mysqlConfig:
   uri: mysql://root:password@localhost:3306/cdpforge
 
-plugin:
-  plugin_name: 'core_pipeline_stage'
-  callback_url: "http://localhost:3333"
+kafkaConfig:
+  brokers:
+  -  'localhost:36715'
+  config_topic: 'config'

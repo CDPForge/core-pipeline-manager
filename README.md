@@ -41,13 +41,13 @@ The pipeline supports two types of stages/plugins:
 2. **Plugin registration:**
 
    - Plugins register by sending an HTTP request to the pipeline manager’s `/register` API endpoint.
-   - Each plugin **must provide a unique `plugin_name`** as part of the registration request.
+   - Each plugin **must provide a unique `name`** as part of the registration request.
    - The registration payload includes:
-     - `plugin_name` (string, unique)
+     - `name` (string, unique)
      - `type` (`blocking` or `parallel`)
      - `priority` (integer > 0)
      - `callback_url` (string URL where the plugin will receive notifications if its Kafka topics change)
-   - The pipeline manager validates the uniqueness of the `plugin_name` and the priority.
+   - The pipeline manager validates the uniqueness of the `name` and the priority.
    - **Input and output Kafka topics are generated randomly** by the pipeline manager upon registration.
    - The plugin registration data (plugin name, type, priority, topics, callback URL) is persisted in a MySQL database to ensure recovery after system restarts.
 
@@ -75,7 +75,7 @@ Registers a new plugin in the pipeline.
 
 ```json
 {
-  "plugin_name": "unique_plugin_name",
+  "name": "unique_name",
   "type": "blocking" | "parallel",
   "priority": <integer>,
   "callback_url": "https://plugin.example.com/notify"

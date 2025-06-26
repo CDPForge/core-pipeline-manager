@@ -10,7 +10,7 @@ const sequelize = new Sequelize(Config.getInstance().config.mysqlConfig.uri,{mod
 Plugin.findOrCreate({
   where: { priority: 0 },
   defaults: {
-    name: Config.getInstance().config.plugin.plugin_name,
+    name: Config.getInstance().config.plugin.name,
     type: 'blocking',
     priority: 0,
     callback_url: Config.getInstance().config.plugin.callback_url,
