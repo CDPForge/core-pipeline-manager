@@ -8,8 +8,10 @@ export default class Config {
 
   private constructor() {
     try {
-      const fileContents = fs.readFileSync(path.join(__dirname, '../config/config.yml'), 'utf8');
-      this.configData = YAML.parse(fileContents);
+      this.configData = {
+        ...YAML.parse(fs.readFileSync(path.join(__dirname, '../config/config.yml'), 'utf8')),
+        ...YAML.parse(fs.readFileSync(path.join(__dirname, '../config/plugin.yml'), 'utf8')),
+      };
     } catch (e) {
       console.error('Error reading or parsing config.yml:', e);
       throw e;
