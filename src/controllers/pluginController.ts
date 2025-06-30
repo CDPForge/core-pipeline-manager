@@ -1,8 +1,19 @@
 import { Request, RequestHandler, Response } from 'express';
 import { Op, Transaction } from 'sequelize';
 import { PluginReq, PluginResult } from '../types';
+import {ConfigMessage} from '@cdp-forge/types';
 import Config from '../config';
 import Plugin from '../models/plugin';
+import { Kafka } from "kafkajs";
+
+const podName = process.env.CLIENT_ID || 'default-client-id';
+
+const kafka = new Kafka({
+  clientId: Config.getInstance().config.plugin.name + `pipeline-manager-${podName}`,
+  brokers: Config.getInstance().config.kafka.brokers,
+});
+const producer = kafka.producer();
+const connection = producer.connect();
 
 export const register: RequestHandler = async (req: Request, res: Response) => {
   const plugin : PluginReq = req.body;
@@ -16,14 +27,11 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
     where: { name: plugin.name }
   })
   if (existingPlugin) {
-    await existingPlugin.update({
-      callback_url: plugin.callback_url
-    });
-    res.json({
-      exists: true,
+    await sendConfigMessage([{
       inputTopic: existingPlugin.input_topic,
-      outputTopic: existingPlugin.output_topic
-    });
+      outputTopic: existingPlugin.output_topic,
+      plugin: plugin.name
+    }]);
     return;
   }
 
@@ -38,14 +46,13 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         name: plugin.name,
         type: plugin.type,
         priority: plugin.priority,
-        callback_url: plugin.callback_url,
         input_topic: plugins.before[0].output_topic
       }, { transaction: t });
       
-
-      res.json({
-        inputTopic: newPlugin.input_topic
-      });
+      await sendConfigMessage([{
+        inputTopic: newPlugin.input_topic,
+        plugin: plugin.name
+      }]);
       return;
     } 
     if (plugins.parallels.length) {
@@ -53,15 +60,15 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         name: plugin.name,
         type: plugin.type,
         priority: plugin.priority,
-        callback_url: plugin.callback_url,
         input_topic: plugins.parallels[0].input_topic,
         output_topic: plugins.parallels[0].output_topic
       }, { transaction: t });
       
 
-      res.json({
-        inputTopic: newPlugin.input_topic
-      });
+      await sendConfigMessage([{
+        inputTopic: newPlugin.input_topic,
+        plugin: plugin.name
+      }]);
       return;
     } 
 
@@ -70,7 +77,6 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
       name: plugin.name,
       type: plugin.type,
       priority: plugin.priority,
-      callback_url: plugin.callback_url,
       input_topic: '',
       output_topic: ''
     }, { transaction: t });
@@ -116,11 +122,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
     return;
   }
 
-  await sendPluginConfiguration(updatedPlugins);
-  res.json({
-    inputTopic: newPlugin.input_topic,
-    outputTopic: newPlugin.output_topic
-  });
+  await sendPluginConfiguration(updatedPlugins.concat(newPlugin));
 };
 
 export const unregister: RequestHandler = async (req: Request, res: Response) => {
@@ -194,9 +196,7 @@ const isValidPlugin = (plugin: PluginReq): boolean => {
   return (
     typeof plugin.name === 'string' &&
     typeof plugin.priority === 'number' && (plugin.priority > 0 || plugin.name == Config.getInstance().config.plugin.name) && plugin.priority <= 100 &&
-    typeof plugin.type === 'string' && ['parallel', 'blocking'].includes(plugin.type) &&
-    typeof plugin.callback_url === 'string'
-  );
+    typeof plugin.type === 'string' && ['parallel', 'blocking'].includes(plugin.type));
 };
 
 const getPlugins = async (priority: number, t: Transaction): Promise<PluginResult> => {
@@ -229,19 +229,19 @@ const getPlugins = async (priority: number, t: Transaction): Promise<PluginResul
 };
 
 const sendPluginConfiguration = (updatedPlugins: Plugin[]): Promise<any> => {
-  let promises: any[] = [];
-  updatedPlugins.map(plugin => {
-    promises.push(fetch(plugin.callback_url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
+  const msges: ConfigMessage[] = updatedPlugins.map((plugin): ConfigMessage => ({
         inputTopic: plugin.input_topic,
-        outputTopic: plugin.output_topic
-      })
-    }).catch(console.log));
-  });
-
-  return Promise.all(promises);
+        outputTopic: plugin.output_topic,
+        plugin: plugin.name
+      }));
+  return sendConfigMessage(msges);
 };
+
+
+const sendConfigMessage = async (configMsgs: ConfigMessage[]) => {
+  await connection;
+  await producer.send({
+    topic: Config.getInstance().config.manager.config_topic,
+    messages: configMsgs.map(config => ({ value: JSON.stringify(config) })),
+  });
+}

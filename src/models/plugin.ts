@@ -34,12 +34,6 @@ export default class Plugin extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    callback_url!: string;
-
-    @Column({
-        type: DataType.STRING,
-        allowNull: false
-    })
     input_topic!: string;
 
     @Column({
