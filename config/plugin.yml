@@ -1,3 +1,2 @@
 plugin:
   name: 'core_pipeline_stage'
-  callback_url: "http://localhost:3333"

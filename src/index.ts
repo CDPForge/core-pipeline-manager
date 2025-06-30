@@ -13,7 +13,6 @@ Plugin.findOrCreate({
     name: Config.getInstance().config.plugin.name,
     type: 'blocking',
     priority: 0,
-    callback_url: Config.getInstance().config.plugin.callback_url,
     input_topic: 'logs',
     output_topic: 'logs_0'
   }

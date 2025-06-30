@@ -10,7 +10,7 @@ const podName = process.env.CLIENT_ID || 'default-client-id';
 
 const kafka = new Kafka({
   clientId: Config.getInstance().config.plugin.name + `pipeline-manager-${podName}`,
-  brokers: Config.getInstance().config.kafka.brokers,
+  brokers: Config.getInstance().config.kafkaConfig.brokers,
 });
 const producer = kafka.producer();
 const connection = producer.connect();
