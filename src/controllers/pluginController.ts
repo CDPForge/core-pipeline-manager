@@ -10,7 +10,7 @@ const podName = process.env.CLIENT_ID || 'default-client-id';
 
 const kafka = new Kafka({
   clientId: Config.getInstance().config.plugin.name + `pipeline-manager-${podName}`,
-  brokers: Config.getInstance().config.kafkaConfig.brokers,
+  brokers: Config.getInstance().config.kafkaConfig.brokers
 });
 const producer = kafka.producer();
 const connection = producer.connect();
@@ -194,9 +194,8 @@ export const unregister: RequestHandler = async (req: Request, res: Response) =>
 
 const isValidPlugin = (plugin: PluginReq): boolean => {
   return (
-    typeof plugin.name === 'string' &&
-    typeof plugin.priority === 'number' && (plugin.priority > 0 || plugin.name == Config.getInstance().config.plugin.name) && plugin.priority <= 100 &&
-    typeof plugin.type === 'string' && ['parallel', 'blocking'].includes(plugin.type));
+    (plugin.priority > 0 || plugin.name == Config.getInstance().config.plugin.name) && plugin.priority <= 100 &&
+    ['parallel', 'blocking'].includes(plugin.type));
 };
 
 const getPlugins = async (priority: number, t: Transaction): Promise<PluginResult> => {
