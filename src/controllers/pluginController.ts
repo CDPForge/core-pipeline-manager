@@ -53,6 +53,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         inputTopic: newPlugin.input_topic,
         plugin: plugin.name
       }]);
+      await t.commit();
       return;
     } 
     if (plugins.parallels.length) {
@@ -69,6 +70,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         inputTopic: newPlugin.input_topic,
         plugin: plugin.name
       }]);
+      await t.commit();
       return;
     } 
 
