@@ -32,6 +32,10 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
       outputTopic: existingPlugin.output_topic,
       plugin: plugin.name
     }]);
+    // ✅ Aggiungere risposta di successo
+    res.status(208).json({
+      message: "Plugin already registered"
+    });
     return;
   }
 
@@ -54,6 +58,10 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         plugin: plugin.name
       }]);
       await t.commit();
+      // ✅ Aggiungere risposta di successo
+      res.status(201).json({
+        message: "Parallel plugin registered successfully"
+      });
       return;
     } 
     if (plugins.parallels.length) {
@@ -71,6 +79,10 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         plugin: plugin.name
       }]);
       await t.commit();
+      // ✅ Aggiungere risposta di successo
+      res.status(201).json({
+        message: "Plugin registered successfully"
+      });
       return;
     } 
 
@@ -116,7 +128,7 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
       updatedPlugins.concat(res[1]);
     }));
     await Promise.all(promises);
-
+    
     await t.commit();
   } catch (error ) {
     await t.rollback();
@@ -125,6 +137,10 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
   }
 
   await sendPluginConfiguration(updatedPlugins.concat(newPlugin));
+  // ✅ Aggiungere risposta di successo per il caso finale
+  res.status(201).json({
+    message: "Blocking plugin registered successfully"
+  });
 };
 
 export const unregister: RequestHandler = async (req: Request, res: Response) => {
