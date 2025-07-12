@@ -3,7 +3,10 @@ import defineRoutes from './routes';
 import config from './config/default';
 import path from 'path';
 import { Sequelize } from 'sequelize-typescript';
+import { CronJob } from 'cron';
 import Plugin from './models/plugin';
+import { sendAllConfig } from './controllers/pluginController';
+import cors from 'cors';
 
 const sequelize = new Sequelize(config.mysql!.uri,{models: [path.join(__dirname, './models')]});
 
@@ -17,7 +20,7 @@ Plugin.findOrCreate({
     output_topic: 'logs_0'
   }
 });
-var cors = require('cors');
+
 var app = express();
 
 app.use(cors());
@@ -51,3 +54,15 @@ start().catch((err) => {
   console.error('Errore durante l\'avvio del server:', err);
   handleExit();
 });
+
+if (config.cron.enabled) {
+  console.log('Init cronjob sendConfigMessage');
+  CronJob.from({
+    cronTime: config.cron.time,
+    onTick: function () {
+      console.log('Start cronjob sendConfigMessage');
+      sendAllConfig();
+    },
+    start: true    
+  });
+}

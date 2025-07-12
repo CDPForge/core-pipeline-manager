@@ -208,6 +208,12 @@ export const unregister: RequestHandler = async (req: Request, res: Response) =>
   res.status(204).end();
 };
 
+export const sendAllConfig = async (): Promise<any> => {
+  return Plugin.findAll().then(Plugins => {
+    return sendPluginConfiguration(Plugins);
+  });
+};
+
 const isValidPlugin = (plugin: PluginReq): boolean => {
   return (
     (plugin.priority > 0 || plugin.name == config.coreStagePluginName) && plugin.priority <= 100 &&

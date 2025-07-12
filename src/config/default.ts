@@ -39,7 +39,11 @@ const config: Config =  {
         name: env("CLIENT_ID", Math.random().toString(36).substring(2, 10))
     },
     port: env<number>("PORT", 3000),
-    coreStagePluginName: env("CORE_STAGE_PLUGIN_NAME", 'core_pipeline_stage')
+    coreStagePluginName: env("CORE_STAGE_PLUGIN_NAME", 'core_pipeline_stage'),
+    cron: {
+        enabled: true,
+        time: '*/1 * * * *'
+    }
 };
 
 export default config;
