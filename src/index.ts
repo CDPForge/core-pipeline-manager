@@ -1,16 +1,16 @@
 import express from 'express';
 import defineRoutes from './routes';
-import Config from './config';
+import config from './config/default';
 import path from 'path';
 import { Sequelize } from 'sequelize-typescript';
 import Plugin from './models/plugin';
 
-const sequelize = new Sequelize(Config.getInstance().config.mysqlConfig.uri,{models: [path.join(__dirname, './models')]});
+const sequelize = new Sequelize(config.mysql!.uri,{models: [path.join(__dirname, './models')]});
 
 Plugin.findOrCreate({
   where: { priority: 0 },
   defaults: {
-    name: Config.getInstance().config.plugin.name,
+    name: config.coreStagePluginName,
     type: 'blocking',
     priority: 0,
     input_topic: 'logs',

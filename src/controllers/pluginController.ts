@@ -1,16 +1,14 @@
 import { Request, RequestHandler, Response } from 'express';
 import { Op, Transaction } from 'sequelize';
 import { PluginReq, PluginResult } from '../types';
-import {ConfigMessage} from '@cdp-forge/types';
-import Config from '../config';
+import { ConfigMessage } from '@cdp-forge/types';
+import config from '../config/default';
 import Plugin from '../models/plugin';
 import { Kafka } from "kafkajs";
 
-const podName = process.env.CLIENT_ID || 'default-client-id';
-
 const kafka = new Kafka({
-  clientId: Config.getInstance().config.plugin.name + `pipeline-manager-${podName}`,
-  brokers: Config.getInstance().config.kafkaConfig.brokers
+  clientId: config.coreStagePluginName + `pipeline-manager-${config.pod.name}`,
+  brokers: config.kafka!.brokers
 });
 const producer = kafka.producer();
 const connection = producer.connect();
@@ -212,7 +210,7 @@ export const unregister: RequestHandler = async (req: Request, res: Response) =>
 
 const isValidPlugin = (plugin: PluginReq): boolean => {
   return (
-    (plugin.priority > 0 || plugin.name == Config.getInstance().config.plugin.name) && plugin.priority <= 100 &&
+    (plugin.priority > 0 || plugin.name == config.coreStagePluginName) && plugin.priority <= 100 &&
     ['parallel', 'blocking'].includes(plugin.type));
 };
 
@@ -258,7 +256,7 @@ const sendPluginConfiguration = (updatedPlugins: Plugin[]): Promise<any> => {
 const sendConfigMessage = async (configMsgs: ConfigMessage[]) => {
   await connection;
   await producer.send({
-    topic: Config.getInstance().config.manager.config_topic,
+    topic: config.pipelinemanager!.config_topic,
     messages: configMsgs.map(config => ({ value: JSON.stringify(config) })),
   });
 }

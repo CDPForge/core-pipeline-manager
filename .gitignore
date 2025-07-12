@@ -2,5 +2,5 @@ node_modules
 .idx
 dist
 .vscode
-config/config.yml
 .idea
+.env
