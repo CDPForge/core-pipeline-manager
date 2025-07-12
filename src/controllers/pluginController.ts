@@ -10,7 +10,7 @@ const kafka = new Kafka({
   clientId: config.coreStagePluginName + `pipeline-manager-${config.pod.name}`,
   brokers: config.kafka!.brokers
 });
-const producer = kafka.producer();
+const producer = kafka.producer({allowAutoTopicCreation: true});
 const connection = producer.connect();
 
 export const register: RequestHandler = async (req: Request, res: Response) => {
