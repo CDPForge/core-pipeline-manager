@@ -3,7 +3,9 @@ import defineRoutes from './routes';
 import Config from './config';
 import path from 'path';
 import { Sequelize } from 'sequelize-typescript';
+import { CronJob } from 'cron';
 import Plugin from './models/plugin';
+import { sendAllConfig } from './controllers/pluginController';
 
 const sequelize = new Sequelize(Config.getInstance().config.mysqlConfig.uri,{models: [path.join(__dirname, './models')]});
 
@@ -51,3 +53,15 @@ start().catch((err) => {
   console.error('Errore durante l\'avvio del server:', err);
   handleExit();
 });
+
+if (Config.getInstance().config.manager.cron.enabled) {
+  console.log('Init cronjob sendConfigMessage');
+  CronJob.from({
+    cronTime: Config.getInstance().config.manager.cron.time,
+    onTick: function () {
+      console.log('Start cronjob sendConfigMessage');
+      sendAllConfig();
+    },
+    start: true    
+  });
+}

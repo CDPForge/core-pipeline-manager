@@ -8,3 +8,6 @@ kafkaConfig:
 
 manager:
   config_topic: 'config'
+  cron:
+    enabled: true
+    time: '*/1 * * * *'
