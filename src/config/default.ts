@@ -19,8 +19,10 @@ function env<T extends Parsed>(key: string, fallback: T, type: 'string' | 'numbe
 }
 
 const config: Config =  {
-    kafka: {
-        brokers: env<string[]>('KAFKA_BROKERS', ['cdp-forge-kafka-kafka-bootstrap:9092'], 'string[]'),
+    pulsar: {
+        proxy: env('PULSAR_PROXY', 'pulsar://cdp-forge-pulsar-proxy:6650'),
+        uiPassword: env('PULSAR_UI_PASSWORD',""),
+        dbPassword: env('PULSAR_DB_PASSWORD',""),
     },
     mysql: {
         uri: env("MYSQL_URI","mysql://root:cdp-forge-root-2024@cdp-forge-mysql:3306/cdpforge")

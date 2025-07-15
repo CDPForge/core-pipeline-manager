@@ -4,14 +4,10 @@ import { PluginReq, PluginResult } from '../types';
 import { ConfigMessage } from '@cdp-forge/types';
 import config from '../config/default';
 import Plugin from '../models/plugin';
-import { Kafka } from "kafkajs";
+import PlusarProducer from "../pulsarProducer";
 
-const kafka = new Kafka({
-  clientId: config.coreStagePluginName + `pipeline-manager-${config.pod.name}`,
-  brokers: config.kafka!.brokers
-});
-const producer = kafka.producer({allowAutoTopicCreation: true});
-const connection = producer.connect();
+const producer = new PlusarProducer(config.pipelinemanager!.config_topic);
+producer.connect();
 
 export const register: RequestHandler = async (req: Request, res: Response) => {
   const plugin : PluginReq = req.body;
@@ -260,9 +256,5 @@ const sendPluginConfiguration = (updatedPlugins: Plugin[]): Promise<any> => {
 
 
 const sendConfigMessage = async (configMsgs: ConfigMessage[]) => {
-  await connection;
-  await producer.send({
-    topic: config.pipelinemanager!.config_topic,
-    messages: configMsgs.map(config => ({ value: JSON.stringify(config) })),
-  });
+  await producer.send(configMsgs);
 }
