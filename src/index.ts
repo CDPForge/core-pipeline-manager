@@ -7,6 +7,7 @@ import { CronJob } from 'cron';
 import Plugin from './models/plugin';
 import { sendAllConfig } from './controllers/pluginController';
 import cors from 'cors';
+import PulsarProducer from "./pulsarProducer";
 
 const sequelize = new Sequelize(config.mysql!.uri,{models: [path.join(__dirname, './models')]});
 
@@ -43,6 +44,7 @@ const start = async () => {
 const handleExit = async () => {
   console.log('Arresto del server in corso...');
   await sequelize.close();
+  await PulsarProducer.closeAll();
   console.log('Mysql disconnesso correttamente');
   process.exit(0);
 };
