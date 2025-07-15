@@ -37,9 +37,11 @@ export default class PulsarProducer {
   async send(msgs: any[]): Promise<void> {
     try {
       await this.connect();
-      await this.producer!.send({
-        data: Buffer.from(JSON.stringify(msgs))
-      });
+      await Promise.all(
+          msgs.map(msg => this.producer!.send({
+            data: Buffer.from(JSON.stringify(msg)),
+          }))
+      );
       console.log('Log inviato con successo a Kafka');
     } catch (error) {
       console.error('Errore nell\'invio del log a Kafka:', error);
