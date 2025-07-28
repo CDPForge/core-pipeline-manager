@@ -2,11 +2,11 @@ import { Column, DataType, Model, Table } from 'sequelize-typescript';
 
 @Table({
     tableName: 'plugins',
-    timestamps: false,
+    timestamps: true,
 })
 export default class Plugin extends Model {
     @Column({
-        type: DataType.INTEGER,
+        type: DataType.BIGINT,
         primaryKey: true,
         autoIncrement: true,
     })
@@ -34,18 +34,11 @@ export default class Plugin extends Model {
         type: DataType.STRING,
         allowNull: false
     })
-    input_topic!: string;
+    inputTopic!: string;
 
     @Column({
         type: DataType.STRING,
         allowNull: true
     })
-    output_topic!: string;
-
-    @Column({
-        type: DataType.DATE,
-        allowNull: false,
-        defaultValue: DataType.NOW,
-    })
-    createdAt!: Date;
+    outputTopic!: string;
 }

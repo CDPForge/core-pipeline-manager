@@ -22,8 +22,8 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
   })
   if (existingPlugin) {
     await sendConfigMessage([{
-      inputTopic: existingPlugin.input_topic,
-      outputTopic: existingPlugin.output_topic,
+      inputTopic: existingPlugin.inputTopic,
+      outputTopic: existingPlugin.outputTopic,
       plugin: plugin.name
     }]);
     // ✅ Aggiungere risposta di successo
@@ -44,11 +44,11 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         name: plugin.name,
         type: plugin.type,
         priority: plugin.priority,
-        input_topic: plugins.before[0].output_topic
+        inputTopic: plugins.before[0].outputTopic
       }, { transaction: t });
       
       await sendConfigMessage([{
-        inputTopic: newPlugin.input_topic,
+        inputTopic: newPlugin.inputTopic,
         plugin: plugin.name
       }]);
       await t.commit();
@@ -63,13 +63,13 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
         name: plugin.name,
         type: plugin.type,
         priority: plugin.priority,
-        input_topic: plugins.parallels[0].input_topic,
-        output_topic: plugins.parallels[0].output_topic
+        inputTopic: plugins.parallels[0].inputTopic,
+        outputTopic: plugins.parallels[0].outputTopic
       }, { transaction: t });
       
 
       await sendConfigMessage([{
-        inputTopic: newPlugin.input_topic,
+        inputTopic: newPlugin.inputTopic,
         plugin: plugin.name
       }]);
       await t.commit();
@@ -85,35 +85,35 @@ export const register: RequestHandler = async (req: Request, res: Response) => {
       name: plugin.name,
       type: plugin.type,
       priority: plugin.priority,
-      input_topic: '',
-      output_topic: ''
+      inputTopic: '',
+      outputTopic: ''
     }, { transaction: t });
     let newTopic = "logs_" + newPlugin.id;
 
     if (plugins.after.length) {
       promises.push(newPlugin.update({
-        input_topic: plugins.before[0].output_topic,
-        output_topic: newTopic
+        inputTopic: plugins.before[0].outputTopic,
+        outputTopic: newTopic
       }, { transaction: t }));
       plugins.after.map(plugin => {
         promises.push(plugin.update({
-          input_topic: newTopic
+          inputTopic: newTopic
         }, { transaction: t }).then(plugin => {
           updatedPlugins.push(plugin);
         }));
       });
     } else {
       promises.push(newPlugin.update({
-        input_topic: plugins.before[0].output_topic,
-        output_topic: newTopic
+        inputTopic: plugins.before[0].outputTopic,
+        outputTopic: newTopic
       }, { transaction: t }));
     }
     promises.push(Plugin.update({
-      input_topic: newTopic
+      inputTopic: newTopic
     }, {
       where: {
         type: 'parallel',
-        input_topic: plugins.before[0].output_topic,
+        inputTopic: plugins.before[0].outputTopic,
         priority: { [Op.gt]: newPlugin.priority }
       },
       returning: true,
@@ -172,18 +172,18 @@ export const unregister: RequestHandler = async (req: Request, res: Response) =>
     if (plugins.after.length) {
       plugins.after.map(plugin => {
         promises.push(plugin.update({
-          input_topic: plugins.before[0].output_topic
+          inputTopic: plugins.before[0].outputTopic
         }, { transaction: t }).then(plugin => {
           updatedPlugins.push(plugin);
         }));
       });
     }
     promises.push(Plugin.update({
-      input_topic: plugins.before[0].output_topic
+      inputTopic: plugins.before[0].outputTopic
     }, {
       where: {
         type: 'parallel',
-        input_topic: existingPlugin.output_topic,
+        inputTopic: existingPlugin.outputTopic,
         priority: { [Op.gt]: existingPlugin.priority }
       },
       returning: true,
@@ -247,8 +247,8 @@ const getPlugins = async (priority: number, t: Transaction): Promise<PluginResul
 
 const sendPluginConfiguration = (updatedPlugins: Plugin[]): Promise<any> => {
   const msges: ConfigMessage[] = updatedPlugins.map((plugin): ConfigMessage => ({
-        inputTopic: plugin.input_topic,
-        outputTopic: plugin.output_topic,
+        inputTopic: plugin.inputTopic,
+        outputTopic: plugin.outputTopic,
         plugin: plugin.name
       }));
   return sendConfigMessage(msges);
