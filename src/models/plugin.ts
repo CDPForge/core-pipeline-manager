@@ -47,5 +47,5 @@ export default class Plugin extends Model {
         allowNull: false,
         defaultValue: DataType.NOW,
     })
-    createdAt!: Date;
+    created_at!: Date;
 }
